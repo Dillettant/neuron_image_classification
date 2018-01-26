@@ -30,6 +30,56 @@ except ImportError:
 
 img_input = (256, 256, 2)
 
+def VGG_16(weights_path=None):
+    model = Sequential()
+    model.add(ZeroPadding2D((1,1),input_shape=img_input))
+    model.add(Convolution2D(64, 3, 3, activation='relu'))
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(64, 3, 3, activation='relu'))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
+
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(128, 3, 3, activation='relu'))
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(128, 3, 3, activation='relu'))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
+
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(256, 3, 3, activation='relu'))
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(256, 3, 3, activation='relu'))
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(256, 3, 3, activation='relu'))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
+
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
+
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Convolution2D(512, 3, 3, activation='relu'))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
+
+    model.add(Flatten())
+    model.add(Dense(4096, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(4096, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(1000, activation='softmax'))
+
+    if weights_path:
+        model.load_weights(weights_path)
+
+    return model
+
 def VGG_19(weights_path=None):
     model = Sequential()
     # model.add(ZeroPadding2D((1,1),input_shape=(3,224,224)))
@@ -37,13 +87,13 @@ def VGG_19(weights_path=None):
     model.add(Convolution2D(64, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(64, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="th"))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
 
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(128, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(128, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="th"))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
 
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(256, 3, 3, activation='relu'))
@@ -53,7 +103,7 @@ def VGG_19(weights_path=None):
     model.add(Convolution2D(256, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(256, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="th"))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
 
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(512, 3, 3, activation='relu'))
@@ -63,7 +113,7 @@ def VGG_19(weights_path=None):
     model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(512, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="th"))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
 
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(512, 3, 3, activation='relu'))
@@ -73,7 +123,7 @@ def VGG_19(weights_path=None):
     model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(512, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="th"))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
 
     model.add(Flatten())
     model.add(Dense(4096, activation='relu'))
@@ -114,7 +164,8 @@ if __name__ == "__main__":
     data_x, data_y = shuffle(data_x, data_y)
 
     # Test pretrained model
-    model = VGG_19("vgg19_weights_th_dim_ordering_th_kernels.h5")
+    # model = VGG_19("vgg19_weights_th_dim_ordering_th_kernels.h5")
+    model = VGG_16("vgg16_weights_tf_dim_ordering_tf_kernels.h5")
     sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(optimizer=sgd, loss='categorical_crossentropy')
     model.summary()
@@ -126,8 +177,8 @@ if __name__ == "__main__":
     data_augmentation = True
     batch_size = 10
     epochs = 5000
-    test_set_size = 0.1
-    val_set_size = 0.1
+    test_set_size = 0.2
+    val_set_size = 0.2
     cv_split_size = 10
     processed_data = []
     if cross_validation:
