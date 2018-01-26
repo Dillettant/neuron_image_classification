@@ -1,2 +1,3 @@
-image_data_256x256.npy
-labels.npy
+*.csv
+*.h5
+*.npy
