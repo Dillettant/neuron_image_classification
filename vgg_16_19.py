@@ -36,13 +36,13 @@ def VGG_16(weights_path=None):
     model.add(Convolution2D(64, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(64, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="th"))
 
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(128, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(128, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="th"))
 
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(256, 3, 3, activation='relu'))
@@ -50,7 +50,7 @@ def VGG_16(weights_path=None):
     model.add(Convolution2D(256, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(256, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="th"))
 
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(512, 3, 3, activation='relu'))
@@ -58,7 +58,7 @@ def VGG_16(weights_path=None):
     model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(512, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="th"))
 
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(512, 3, 3, activation='relu'))
@@ -66,7 +66,7 @@ def VGG_16(weights_path=None):
     model.add(Convolution2D(512, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(512, 3, 3, activation='relu'))
-    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="tf"))
+    model.add(MaxPooling2D((2,2), strides=(2,2), dim_ordering="th"))
 
     model.add(Flatten())
     model.add(Dense(4096, activation='relu'))
@@ -76,7 +76,7 @@ def VGG_16(weights_path=None):
     model.add(Dense(1000, activation='softmax'))
 
     if weights_path:
-        model.load_weights(weights_path)
+        model.load_weights(weights_path, by_name=True)
 
     return model
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
     # Test pretrained model
     # model = VGG_19("vgg19_weights_th_dim_ordering_th_kernels.h5")
-    model = VGG_16("vgg16_weights_tf_dim_ordering_tf_kernels.h5")
+    model = VGG_16("vgg16_weights_th_dim_ordering_th_kernels.h5")
     sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(optimizer=sgd, loss='categorical_crossentropy')
     model.summary()
@@ -209,14 +209,23 @@ if __name__ == "__main__":
             processed_data.append([(x_train,y_train),(x_val, y_val),(x_test, y_test)])
         print "Cross validation data has been split!"
 
-    predict = []
+    (x_test, y_test) = processed_data[0][2]
+    x_test = np.expand_dims(x_test[0], axis=0)
+    print x_test.shape
+    print "The vgg prediction is running, the first trial is {}".format(model.predict(x_test))
+
+    '''
+    predict_all = []
     for _ in range(len(processed_data)):
+	predict = []
         (x_test, y_test) = processed_data[_][2]
         for i in range(len(x_test)):
             # input_x = x_test[i]
-            out = model.predict(x_test)
+            out = model.predict(x_test, batch_size = batch_size)
             predict.append(out)
         # print np.argmax(out)
-
+	predict_all.append(predict)
+    np.save("vgg_16_prediction.npy",predict_all)
+    '''
     # out = model.predict(im)
     # print np.argmax(out)
