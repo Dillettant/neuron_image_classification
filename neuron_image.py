@@ -82,8 +82,6 @@ model.summary()
 
 cross_validation = True
 data_augmentation = True
-batch_size = 8
-epochs = 1000
 
 from sklearn.cross_validation import train_test_split
 from sklearn.model_selection import KFold
@@ -142,6 +140,9 @@ data_augmentation = True
 batch_size = 8
 epochs = 1000
 
+from keras.callbacks import EarlyStopping
+early_stopping = EarlyStopping(monitor='val_loss', patience=2)
+
 # trainging and test process
 def learn_and_test(x_train, y_train,
                   x_val, y_val,
@@ -153,7 +154,8 @@ def learn_and_test(x_train, y_train,
                   batch_size=batch_size,
                   epochs=1,
                   validation_data=(x_val, x_val),
-                  shuffle=False)
+                  shuffle=False,
+                  callbacks=[early_stopping])
             print "Epoch {}/{}:".format(_ + 1, epochs)
         (loss,accur) = model.evaluate(x=x_test, y=y_test, batch_size=batch_size)
         print "Model accuary after training: {}".format(accur)
@@ -185,7 +187,7 @@ def learn_and_test(x_train, y_train,
                                 epochs=1,
                                 validation_data=(x_val, y_val),
                                 workers=4,
-                                callbacks=None)
+                                callbacks=[early_stopping])
             print "Epoch {}/{}:".format(_ + 1, epochs)
         (loss,accur) = model.evaluate(x=x_test, y=y_test, batch_size=batch_size)
         print "Model accuary after training: {}".format(accur)
@@ -208,3 +210,15 @@ else:
         all_accur.append(accur)
     print "Model loss after training: {}".format(np.mean(all_loss))
     print "Model accuary after training: {}".format(np.mean(all_accur))
+
+# Save model and weights
+if not os.path.isdir(save_dir):
+    os.makedirs(save_dir)
+model_path = os.path.join(save_dir, model_name)
+model.save(model_path)
+print('Saved trained model at %s ' % model_path)
+
+# Score trained model.
+scores = model.evaluate(x_test, y_test, verbose=1)
+print('Test loss:', scores[0])
+print('Test accuracy:', scores[1])

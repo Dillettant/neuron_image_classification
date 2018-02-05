@@ -16,7 +16,7 @@ def get_session(gpu_fraction=0.3):
     else:
         return tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
-KTF.set_session(get_session(1.0))
+KTF.set_session(get_session(0.8))
 
 from keras.models import Sequential
 from keras.layers.core import Flatten, Dense, Dropout
@@ -30,7 +30,7 @@ except ImportError:
 
 img_input = (256, 256, 2)
 
-def VGG_16(weights_path=None):
+def VGG_16(weights_path=None, num_classes = 3):
     model = Sequential()
     model.add(ZeroPadding2D((1,1),input_shape=img_input))
     model.add(Convolution2D(64, 3, 3, activation='relu'))
@@ -73,14 +73,14 @@ def VGG_16(weights_path=None):
     model.add(Dropout(0.5))
     model.add(Dense(4096, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(1000, activation='softmax'))
+    model.add(Dense(num_classes, activation='softmax'))
 
     if weights_path:
         model.load_weights(weights_path, by_name=True)
 
     return model
 
-def VGG_19(weights_path=None):
+def VGG_19(weights_path=None, num_classes = 3):
     model = Sequential()
     # model.add(ZeroPadding2D((1,1),input_shape=(3,224,224)))
     model.add(ZeroPadding2D((1,1),input_shape=img_input))
@@ -130,12 +130,15 @@ def VGG_19(weights_path=None):
     model.add(Dropout(0.5))
     model.add(Dense(4096, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(1000, activation='softmax'))
+    model.add(Dense(num_classes, activation='softmax'))
 
     if weights_path:
         model.load_weights(weights_path, by_name=True)
 
     return model
+
+def VGG_preprocessing():
+    pass
 
 if __name__ == "__main__":
 
@@ -164,8 +167,8 @@ if __name__ == "__main__":
     data_x, data_y = shuffle(data_x, data_y)
 
     # Test pretrained model
-    # model = VGG_19("vgg19_weights_th_dim_ordering_th_kernels.h5")
-    model = VGG_16("vgg16_weights_th_dim_ordering_th_kernels.h5")
+    model = VGG_19("vgg19_weights_th_dim_ordering_th_kernels.h5")
+    # model = VGG_16("vgg16_weights_th_dim_ordering_th_kernels.h5")
     sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(optimizer=sgd, loss='categorical_crossentropy')
     model.summary()
@@ -209,10 +212,30 @@ if __name__ == "__main__":
             processed_data.append([(x_train,y_train),(x_val, y_val),(x_test, y_test)])
         print "Cross validation data has been split!"
 
+    # the evaluate method
+    # from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+    # y_test = LabelEncoder().fit_transform(y_test)
+    # scores = model.evaluate(x_test, y_test, batch_size = batch_size)
+    # print('Test loss:', scores[0])
+    # print('Test accuracy:', scores[1])
+
+
     (x_test, y_test) = processed_data[0][2]
-    x_test = np.expand_dims(x_test[0], axis=0)
-    print x_test.shape
-    print "The vgg prediction is running, the first trial is {}".format(model.predict(x_test))
+    print np.array(x_test).shape, np.array(y_test).shape
+
+    import tflearn
+    from tflearn.data_preprocessing import ImagePreprocessing
+
+    # VGG preprocessing
+    img_prep = ImagePreprocessing()
+    img_prep.add_featurewise_zero_center(mean=[123.68, 116.779, 103.939],
+                                         per_channel=True)
+    # VGG Network
+    x = tflearn.input_data(shape=[None, 224, 224, 3], name='input',
+    data_preprocessing=img_prep)
+
+    pred_test = model.predict(x_test)
+    print "The vgg prediction is running, the first trial is {}".format(pred_test)
 
     '''
     predict_all = []
