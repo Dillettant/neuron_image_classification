@@ -137,12 +137,10 @@ def VGG_19(weights_path=None, num_classes = 3):
 
     return model
 
-def VGG_preprocessing():
+def ImageNet_preprocessing(input_img_size, output_img_size):
     pass
 
 if __name__ == "__main__":
-
-
     # im = cv2.resize(cv2.imread('cat.jpg'), (224, 224)).astype(np.float32)
     # im[:,:,0] -= 103.939
     # im[:,:,1] -= 116.779
@@ -219,23 +217,15 @@ if __name__ == "__main__":
     # print('Test loss:', scores[0])
     # print('Test accuracy:', scores[1])
 
-
     (x_test, y_test) = processed_data[0][2]
-    print np.array(x_test).shape, np.array(y_test).shape
-
-    import tflearn
-    from tflearn.data_preprocessing import ImagePreprocessing
-
-    # VGG preprocessing
-    img_prep = ImagePreprocessing()
-    img_prep.add_featurewise_zero_center(mean=[123.68, 116.779, 103.939],
-                                         per_channel=True)
-    # VGG Network
-    x = tflearn.input_data(shape=[None, 224, 224, 3], name='input',
-    data_preprocessing=img_prep)
 
     pred_test = model.predict(x_test)
-    print "The vgg prediction is running, the first trial is {}".format(pred_test)
+    pred_test = np.argmax(pred_test, axis=1)
+    print("The vgg prediction is running, the first trial is {}".format(pred_test))
+
+    print(np.argmax(y_test, axis=1))
+    from sklearn.metrics import auc
+    # print(auc(pred_test, np.argmax(y_test, axis=1)))
 
     '''
     predict_all = []

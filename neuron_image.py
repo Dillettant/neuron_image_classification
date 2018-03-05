@@ -44,30 +44,34 @@ data_y = np.array([data_y]).T
 from sklearn.utils import shuffle
 data_x, data_y = shuffle(data_x, data_y)
 
-# define the model 
-# CNN structure
-model = Sequential()
-model.add(Conv2D(16, (3, 3), padding='same',
-                 input_shape=image_shape))
-model.add(Activation('relu'))
-model.add(Conv2D(16, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
+def build_model(img_shape = (256, 256, 2)):
+    # define the model
+    # CNN structure
+    model = Sequential()
+    model.add(Conv2D(16, (3, 3), padding='same',
+                     input_shape=img_shape))
+    model.add(Activation('relu'))
+    model.add(Conv2D(16, (3, 3)))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
 
-model.add(Conv2D(64, (3, 3), padding='same'))
-model.add(Activation('relu'))
-model.add(Conv2D(64, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
+    model.add(Conv2D(64, (3, 3), padding='same'))
+    model.add(Activation('relu'))
+    model.add(Conv2D(64, (3, 3)))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
 
-model.add(Flatten())
-model.add(Dense(256))
-model.add(Activation('relu'))
-model.add(Dropout(0.5))
-model.add(Dense(num_classes))
-model.add(Activation('softmax'))
+    model.add(Flatten())
+    model.add(Dense(256))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(num_classes))
+    model.add(Activation('softmax'))
+    return model
+
+model = build_model(img_shape = image_shape)
 
 # initiate RMSprop optimizer
 opt = keras.optimizers.rmsprop(lr=0.00005, decay=1e-5)
@@ -94,7 +98,7 @@ if cross_validation:
     all_index = [_ for _ in range(len(data_x))]
     # cross-validataion data set
     kf = KFold(n_splits=cv_split_size)
-    
+
     for train, test in kf.split(all_index):
         print("Train size: {}, Test size: {}".format(train.shape, test.shape))
         x_train = data_x[train]
@@ -134,7 +138,7 @@ else:
     x_test /= 255
     processed_data.append([(x_train,y_train),(x_val, y_val),(x_test, y_test)])
     print "Data has been split!"
-    
+
 cross_validation = True
 data_augmentation = True
 batch_size = 8
@@ -146,7 +150,7 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=2)
 # trainging and test process
 def learn_and_test(x_train, y_train,
                   x_val, y_val,
-                  x_test, y_test):    
+                  x_test, y_test):
     if not data_augmentation:
         print('Not using data augmentation.')
         for _ in range(epochs):
@@ -193,7 +197,7 @@ def learn_and_test(x_train, y_train,
         print "Model accuary after training: {}".format(accur)
         return loss, accur
 
-    
+
 if not cross_validation:
     (x_train,y_train),(x_val, y_val),(x_test, y_test) = processed_data[0]
     loss, accur = learn_and_test(x_train, y_train, x_val, y_val, x_test, y_test)
